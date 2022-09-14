@@ -94,6 +94,11 @@ namespace OmegaTweaks
         [HarmonyPatch("FinishRespecialization")]
         public static bool FinishRespecializationPrefix(ref RespecCompanion __instance)
         {
+            if (!OmegaTweaksModMain.settings.NoTimeLossRespecEnable)
+            {
+                return true;
+            }
+
             Player player = Game.Instance.Player;
             if (!__instance.ForFree)
             {

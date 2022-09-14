@@ -1,0 +1,8 @@
+﻿{
+  "Id": "OmegaTweaks",
+  "DisplayName": "Omega Tweaks",
+  "Author": "MebiusTOS",
+  "Version": "0.0.1",
+  "AssemblyName": "OmegaTweaks.dll",
+  "EntryMethod": "OmegaTweaks.OmegaTweaksModMain.Load"
+}

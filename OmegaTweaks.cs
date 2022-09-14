@@ -2,18 +2,13 @@
 using Kingmaker;
 using Kingmaker.Blueprints.Root;
 using Kingmaker.Controllers.Rest;
-using Kingmaker.Controllers;
 using Kingmaker.Designers.EventConditionActionSystem.Actions;
 using Kingmaker.EntitySystem.Entities;
-using Kingmaker.Kingdom;
 using Kingmaker.Kingdom.Blueprints;
-using Kingmaker.UnitLogic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UnityModManagerNet;
 using UnityEngine.SceneManagement;
-using System.Threading;
+using UnityModManagerNet;
 
 namespace OmegaTweaks
 {
@@ -59,11 +54,6 @@ namespace OmegaTweaks
                     inited = true;
                 }
             };
-            //while (KingdomRoot.Instance == null)
-            //{
-            //    Thread.Sleep(200);
-            //}
-            //KingdomRoot.Instance.CustomLeaderPenalty = settings.NoPenaltyCustomCompanionAdvisor ? 0 : -4;
 
             return true;
         }
@@ -137,29 +127,4 @@ namespace OmegaTweaks
             }
         }
     }
-
-    //[HarmonyPatch(typeof(LeaderState))]
-    //static class MyLeaderState
-    //{
-    //    [HarmonyPostfix]
-    //    [HarmonyPatch("GetCharacterStat")]
-    //    public static void GetCharacterStatPostfix(LeaderState.Leader unit, bool withPenalty, ref int __result)
-    //    {
-    //        if (FreeRespec.settings.NoPenaltyCustomCompanionAdvisor)
-    //        {
-    //            if (unit == null || unit.Empty)
-    //            {
-    //                return;
-    //            }
-    //            if (unit.Blueprint.Faction == Game.Instance.BlueprintRoot.PlayerFaction)
-    //            {
-    //                UnitEntityData unitEntityData = Game.Instance.Player.AllCrossSceneUnits.FirstOrDefault((UnitEntityData u) => unit.IsSameUnit(u));
-    //                if (withPenalty && unitEntityData.IsCustomCompanion())
-    //                {
-    //                    __result -= KingdomRoot.Instance.CustomLeaderPenalty;
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
 }

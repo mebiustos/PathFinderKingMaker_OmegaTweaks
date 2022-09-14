@@ -72,7 +72,7 @@ namespace OmegaTweaks
     }
 
     [HarmonyPatch(typeof(Player))]
-    static class OmegaTweaks
+    static class FreeRespec
     {
         // Free Respec
         [HarmonyPostfix]

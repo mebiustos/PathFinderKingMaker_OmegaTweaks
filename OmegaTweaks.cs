@@ -1,14 +1,22 @@
 ﻿using HarmonyLib;
 using Kingmaker;
 using Kingmaker.Blueprints.Root;
+using Kingmaker.Blueprints.Root.Strings.GameLog;
+using Kingmaker.Cheats;
 using Kingmaker.Controllers.Rest;
 using Kingmaker.Designers.EventConditionActionSystem.Actions;
+using Kingmaker.DialogSystem.Blueprints;
 using Kingmaker.EntitySystem.Entities;
+using Kingmaker.GameModes;
 using Kingmaker.Kingdom.Blueprints;
+using Kingmaker.UI._ConsoleUI.GameOver;
+using Kingmaker.UI.Log;
+using OmegaTweaks.ThroneRoomAnorel;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityModManagerNet;
+using static UnityModManagerNet.UnityModManager.ModEntry;
 
 namespace OmegaTweaks
 {
@@ -18,11 +26,12 @@ namespace OmegaTweaks
         [Draw("No time loss for Respec")] public bool NoTimeLossRespecEnable = true;
         [Draw("Cheep Cost Mercenaries (=250*Lv)")] public bool CheepCostMercenaries = true;
         [Draw("No Penalty Mercenary Advisor")] public bool NoPenaltyCustomCompanionAdvisor = true;
+        [Draw("Telepathy Anoriel (*WIP*). Press [P]")] public bool TelepathyAnoriel = false;
 
         public void OnChange()
         {
             KingdomRoot.Instance.CustomLeaderPenalty = NoPenaltyCustomCompanionAdvisor ? 0 : -4;
-            Debug.Log("KingdomRoot.Instance.CustomLeaderPenalty = " + KingdomRoot.Instance.CustomLeaderPenalty);
+            OmegaTweaksModMain.logger.Log("KingdomRoot.Instance.CustomLeaderPenalty = " + KingdomRoot.Instance.CustomLeaderPenalty);
         }
 
         public override void Save(UnityModManager.ModEntry modEntry)
@@ -35,6 +44,7 @@ namespace OmegaTweaks
     {
         public static Settings settings;
         public static bool inited = false;
+        public static ModLogger logger;
 
         public static bool Load(UnityModManager.ModEntry modEntry)
         {
@@ -42,13 +52,17 @@ namespace OmegaTweaks
             harmony2.PatchAll(Assembly.GetExecutingAssembly());
             
             settings = Settings.Load<Settings>(modEntry);
+            logger = modEntry.Logger;
 
             modEntry.OnGUI = OnGUI;
             modEntry.OnSaveGUI = OnSaveGUI;
+            modEntry.OnUpdate = OnUpdate;
 
             SceneManager.sceneLoaded += (scene, mode) =>
             {
-                if (!inited && scene.name == "MainMenu")
+                //logger.Log("Scene: " + scene.name + " Mode: " + mode.ToString());
+                //logger.Log("AreaGUID: " + Game.Instance.CurrentlyLoadedArea?.AssetGuid + " AreaName: " + Game.Instance.CurrentlyLoadedArea?.name);
+                if (!inited && scene.name == SceneName.MainMenu)
                 {
                     settings.OnChange();
                     inited = true;
@@ -69,6 +83,13 @@ namespace OmegaTweaks
             settings.Save(modEntry);
         }
 
+        static void OnUpdate(UnityModManager.ModEntry modEntry, float dt)
+        {
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                TelepathyAnoriel.ShowDialog();
+            }
+        }
     }
 
     [HarmonyPatch(typeof(Player))]
@@ -129,6 +150,34 @@ namespace OmegaTweaks
             {
                 // return BlueprintRoot.Instance.CustomCompanionBaseCost * __instance.PartyLevel * __instance.PartyLevel;
                 __result = (BlueprintRoot.Instance.CustomCompanionBaseCost * __instance.PartyLevel) / 2;
+            }
+        }
+    }
+
+    static class TelepathyAnoriel
+    {
+        public static void ShowDialog()
+        {
+            if (!OmegaTweaksModMain.settings.TelepathyAnoriel)
+            {
+                return;
+            }
+
+            if (Game.Instance.CurrentlyLoadedArea != null)
+            {
+                var areaGuid = Game.Instance.CurrentlyLoadedArea.AssetGuid;
+                if (areaGuid == GUID.Area.CapitalThroneRoom1 ||
+                    areaGuid == GUID.Area.CapitalThroneRoom2 ||
+                    areaGuid == GUID.Area.DungeonStartHub_Roguelike)
+                {
+                    var bp = Utilities.GetBlueprintByGuid<BlueprintDialog>(GUID.Dialog.Anorel);
+                    Game.Instance.DialogController.StartDialogWithoutTarget(bp, null);
+                } else
+                {
+                    OmegaTweaksModMain.logger.Log("Telepathy prohibited area. [GUID: " + areaGuid + " NAME: " + Game.Instance.CurrentlyLoadedArea.name + "]");
+                    OmegaTweaksModMain.logger.Log("Telepathy to Anoriel only works in the capital's throne room or at the start hub in roguelike mode.");
+                    Game.Instance.UI.BattleLogManager.LogView.AddLogEntry("[OmegaTweaks] Telepathy to Anoriel only works in the capital's throne room or at the start hub in roguelike mode.", GameLogStrings.Instance.DefaultColor, LogChannel.None);
+                }
             }
         }
     }

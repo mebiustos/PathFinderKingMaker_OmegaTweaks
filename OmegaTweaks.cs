@@ -22,11 +22,22 @@ namespace OmegaTweaks
 {
     public class Settings : UnityModManager.ModSettings, IDrawable
     {
+        public enum PricePerWeightOverrideTarget
+        {
+            NOT_USE_THIS,
+            Type,
+            Price,
+            Name,
+            Date,
+            Weight,
+        }
+
         [Draw("Free Respec")] public bool FreeRespecEnable = true;
         [Draw("No time loss for Respec")] public bool NoTimeLossRespecEnable = true;
         [Draw("Cheep Cost Mercenaries (=250*Lv)")] public bool CheepCostMercenaries = true;
         [Draw("No Penalty Mercenary Advisor")] public bool NoPenaltyCustomCompanionAdvisor = true;
         [Draw("Telepathy Anoriel (*WIP*). Press [P]")] public bool TelepathyAnoriel = false;
+        [Draw("Override the original sort type to perform a sort by price per weight")] public PricePerWeightOverrideTarget PricePerWeight = PricePerWeightOverrideTarget.NOT_USE_THIS;
 
         public void OnChange()
         {

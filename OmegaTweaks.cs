@@ -20,6 +20,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityModManagerNet;
 using static UnityModManagerNet.UnityModManager.ModEntry;
+using System;
 
 namespace OmegaTweaks
 {
@@ -210,6 +211,24 @@ namespace OmegaTweaks
             }
 
             __result = Rulebook.Trigger<RuleCalculateBuildingCost>(new RuleCalculateBuildingCost(bp, __instance, true)).Cost;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch("GetActualCost")]
+        [HarmonyPatch(new Type[] { typeof(BlueprintSettlementBuilding) })]
+        public static void GetActualCostPostfix(BlueprintSettlementBuilding bp, ref SettlementState __instance, ref int __result)
+        {
+            if (!OmegaTweaksModMain.settings.BuildingFullPriceExchange)
+            {
+                return;
+            }
+
+            if (__instance.SellDiscountedBuilding == bp)
+            {
+                __result = Rulebook.Trigger<RuleCalculateBuildingCost>(new RuleCalculateBuildingCost(bp, __instance, true)).Cost;
+            }
+
+            return;
         }
     }
 }

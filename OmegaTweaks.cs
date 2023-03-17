@@ -10,6 +10,9 @@ using Kingmaker.EntitySystem.Entities;
 using Kingmaker.GameModes;
 using Kingmaker.Kingdom.Blueprints;
 using Kingmaker.UI._ConsoleUI.GameOver;
+using Kingmaker.Kingdom.Rules;
+using Kingmaker.Kingdom.Settlements;
+using Kingmaker.RuleSystem;
 using Kingmaker.UI.Log;
 using OmegaTweaks.ThroneRoomAnorel;
 using System.Reflection;
@@ -38,6 +41,7 @@ namespace OmegaTweaks
         [Draw("No Penalty Mercenary Advisor")] public bool NoPenaltyCustomCompanionAdvisor = true;
         [Draw("Telepathy Anoriel (*WIP*). Press [P]")] public bool TelepathyAnoriel = false;
         [Draw("Override the original sort type to perform a sort by price per weight")] public PricePerWeightOverrideTarget PricePerWeight = PricePerWeightOverrideTarget.NOT_USE_THIS;
+        [Draw("Building full price exchange.")] public bool BuildingFullPriceExchange = false;
 
         public void OnChange()
         {
@@ -190,6 +194,22 @@ namespace OmegaTweaks
                     Game.Instance.UI.BattleLogManager.LogView.AddLogEntry("[OmegaTweaks] Telepathy to Anoriel only works in the capital's throne room or at the start hub in roguelike mode.", GameLogStrings.Instance.DefaultColor, LogChannel.None);
                 }
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(SettlementState))]
+    static class BuildingFullPriceExchange
+    {
+        [HarmonyPostfix]
+        [HarmonyPatch("GetSellPrice")]
+        public static void GetSellPricePostfix(BlueprintSettlementBuilding bp, ref SettlementState __instance, ref int __result)
+        {
+            if (!OmegaTweaksModMain.settings.BuildingFullPriceExchange)
+            {
+                return;
+            }
+
+            __result = Rulebook.Trigger<RuleCalculateBuildingCost>(new RuleCalculateBuildingCost(bp, __instance, true)).Cost;
         }
     }
 }
